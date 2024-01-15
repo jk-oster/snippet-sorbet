@@ -86,6 +86,7 @@ class PythonInterpreter implements LanguageInterpreter {
               import io
               sys.stdout = io.StringIO()
             `);
+            // @ts-ignore
             let result = this.pyodide?.runPython(code);
             let stdout = this.pyodide?.runPython("sys.stdout.getvalue()");
 
