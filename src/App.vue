@@ -50,11 +50,11 @@ const scrollToBottom = () => {
 
   // wait for the DOM to update
   // @ts-ignore
-  this.$nextTick(() => {
+  setTimeout(() => {
     // @ts-ignore
     const element = document.getElementById('output');
     element?.scroll({ top: element?.scrollHeight ?? 0, behavior: "smooth" })
-  });
+  }, 100);
 }
 
 onMounted(() => {
