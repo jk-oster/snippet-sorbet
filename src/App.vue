@@ -46,30 +46,48 @@ const setLang = (event: any) => {
   languageInterpreterService.setLanguage(event.target.value);
 };
 
+const scrollToBottom = () => {
+
+  // wait for the DOM to update
+  // @ts-ignore
+  this.$nextTick(() => {
+    // @ts-ignore
+    const element = document.getElementById('output');
+    element?.scroll({ top: element?.scrollHeight ?? 0, behavior: "smooth" })
+  });
+}
+
 onMounted(() => {
   languageInterpreterService.init();
   codeMirrorInit();
   window.addEventListener('lang:output', (event) => {
     // @ts-ignore
-    output.value = [...output.value, { content: event.detail, type: 'output'}];
+    output.value = [...output.value, { content: event.detail, type: 'output' }];
+    scrollToBottom();
     console.log(output.value);
   });
 
   window.addEventListener('lang:ready', (event) => {
     // @ts-ignore
-    output.value = [...output.value, { content: event.detail, type: 'ready'}];
+    output.value = [...output.value, { content: event.detail, type: 'ready' }];
+    scrollToBottom();
+
     console.log(output.value);
   });
 
   window.addEventListener('lang:changed', (event) => {
     // @ts-ignore
-    output.value = [...output.value, { content: event.detail, type: 'change'}];
+    output.value = [...output.value, { content: event.detail, type: 'change' }];
+    scrollToBottom();
+
     console.log(output.value);
   });
 
   window.addEventListener('lang:error', (event) => {
     // @ts-ignore
-    output.value = [...output.value, { content: event.detail, type: 'error'}];
+    output.value = [...output.value, { content: event.detail, type: 'error' }];
+    scrollToBottom();
+
     console.log(output.value);
   });
 });
@@ -77,34 +95,36 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="bg-slate-900 h-screen mt-0 w-full overflow-hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-    <p class="text-slate-200 text-3xl my-4 font-extrabold mx-2 pt-8">Run Python / PHP / JavaScript in your browser</p>
-    <div class="h-3/4 flex flex-row">
+  <div class="bg-slate-900 h-screen mt-0 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <h1 class="text-slate-200 text-3xl my-4 font-extrabold mx-2 pt-8">Snippet Sorbet</h1>
+    <p class="text-slate-200 text-lg my-4 mx-2 font-bold">A simple code snippet runner. Run Python / PHP (and ofc
+      JavaScript) in your browser</p>
+
+    <div class="h-3/4 flex flex-row mb-8">
       <div class="grid w-2/3 border-dashed border-2 border-slate-500 mx-2">
-        <!-- our code editor, where codemirror renders it's editor -->
         <textarea id="code" name="code" class="h-full"></textarea>
       </div>
-      <div class="grid w-1/3 border-dashed border-2 border-slate-500 mx-2">
-        <!-- output section where we show the stdout of the python code execution -->
-        <div class="p-8 text-slate-200 bg-slate-900">
+      <div class="w-1/3 border-dashed border-2 border-slate-500 mx-2 h-full">
+        <div>
+          <button @click="run()" type="button"
+            class="mx-2 my-4 h-12 px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm bg-green-700 hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 text-slate-300">Run</button>
+          <button @click="clearHistory()" type="button"
+            class="mx-2 my-4 h-12 px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm bg-red-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 text-slate-300">Clear
+            History</button>
+          <select @change="setLang"
+            class="mx-2 my-4 h-12 px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm bg-slate-900 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 text-slate-300">
+            <option selected value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="php">PHP</option>
+          </select>
+        </div>
+        <div class="p-8 text-slate-200 bg-slate-900 h-5/6 overflow-auto" id="output">
           <template v-for="item in output">
             <Output :output="item?.content" :type="item?.type"></Output>
           </template>
         </div>
       </div>
     </div>
-    <!-- run button to pass the code to pyodide.runPython() -->
-    <button @click="run()" type="button"
-      class="mx-2 my-4 h-12 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm bg-green-700 hover:bg-green-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 text-slate-300">Run</button>
-    <!-- clean the output section -->
-    <button @click="clearHistory()" type="button"
-      class="mx-2 my-4 h-12 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm bg-red-700 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-700 text-slate-300">Clear
-      History</button>
-    <select @change="setLang" class="mx-2 my-4 h-12 px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm bg-slate-900 hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 text-slate-300">
-      <option selected value="javascript">JavaScript</option>
-      <option value="python">Python</option>
-      <option value="php">PHP</option>
-    </select>
   </div>
 </template>
 
@@ -139,69 +159,19 @@ onMounted(() => {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
 
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
 }
-
 </style>
